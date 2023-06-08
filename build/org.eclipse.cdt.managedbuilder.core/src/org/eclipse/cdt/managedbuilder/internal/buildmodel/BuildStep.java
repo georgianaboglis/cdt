@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006, 2022 Intel Corporation and others.
+ * Copyright (c) 2006, 2022-2023 Intel Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -255,7 +255,8 @@ public class BuildStep implements IBuildStep {
 					cleanCmd = resolveMacros(cleanCmd, resolveAll);
 					String commands[] = cleanCmd.split(";"); //$NON-NLS-1$
 					for (int i = 0; i < commands.length - 1; i++) {
-						list.add(createCommandFromString(commands[0], cwd, getEnvironment()));
+						list.add(createCommandFromString(commands[0], cwd, getEnvironment(),
+								fTool.getArgumentFileFormat()));
 					}
 
 					List<String> cleanCmdArgs = convertStringToArguments(commands[commands.length - 1]);
@@ -407,17 +408,19 @@ public class BuildStep implements IBuildStep {
 	}
 
 	protected IBuildCommand[] createCommandsFromString(String cmd, IPath cwd, Map<String, String> env) {
-		IBuildCommand buildCommand = createCommandFromString(cmd, cwd, env);
+		IBuildCommand buildCommand = createCommandFromString(cmd, cwd, env, fTool.getArgumentFileFormat());
 		return new IBuildCommand[] { buildCommand };
 	}
 
-	protected IBuildCommand createCommandFromString(String cmd, IPath cwd, Map<String, String> env) {
+	protected IBuildCommand createCommandFromString(String cmd, IPath cwd, Map<String, String> env,
+			String argumentFileFormat) {
 		List<String> list = convertStringToArguments(cmd);
 
 		IPath c = new Path(list.remove(0));
 		String[] args = list.toArray(new String[list.size()]);
 
 		BuildCommand buildCommand = new BuildCommand(c, args, env, cwd, this);
+		buildCommand.setArgumentFileFormat(argumentFileFormat);
 		return buildCommand;
 	}
 

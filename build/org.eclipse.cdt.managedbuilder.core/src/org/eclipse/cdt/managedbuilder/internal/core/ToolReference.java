@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2003, 2016 IBM Corporation and others.
+ * Copyright (c) 2003, 2016, 2023 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -10,6 +10,7 @@
  *
  * Contributors:
  * IBM - Initial API and implementation
+ * Serge Beauchamp (Freescale Semiconductor) - Bug 421276 - The CDT Managed Builder should support long command lines
  *******************************************************************************/
 package org.eclipse.cdt.managedbuilder.internal.core;
 
@@ -1463,5 +1464,10 @@ public class ToolReference implements IToolReference {
 	@Override
 	public void setOutputPrefixForPrimaryOutput(String prefix) {
 		setOutputPrefix(prefix);
+	}
+
+	@Override
+	public String getArgumentFileFormat() {
+		return null;
 	}
 }

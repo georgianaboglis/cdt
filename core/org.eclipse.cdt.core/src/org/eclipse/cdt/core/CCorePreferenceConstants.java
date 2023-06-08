@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2015 QNX Software Systems and others.
+ * Copyright (c) 2000, 2015, 2023 QNX Software Systems and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -14,6 +14,7 @@
  *     Sergey Prigogin (Google)
  *     IBM Corporation
  *     Jens Elmenthaler - http://bugs.eclipse.org/173458 (camel case completion)
+ *     Serge Beauchamp (Freescale Semiconductor) - Bug 421276 - The CDT Managed Builder should support long command lines
  *******************************************************************************/
 package org.eclipse.cdt.core;
 
@@ -210,6 +211,13 @@ public class CCorePreferenceConstants {
 	 * @since 5.3
 	 */
 	public static final String PREF_BUILD_CONFIGS_RESOURCE_CHANGES = "build.proj.ref.configs.enabled"; //$NON-NLS-1$
+
+	/**
+	 * Preference key for "build only if resources in (related) projects are modified".
+	 *
+	 * @since 8.2
+	 */
+	public static final String PREF_BUILD_USE_ARGUMENT_FILES = "build.proj.use.argumentFiles"; //$NON-NLS-1$
 
 	/**
 	 * Default value for {@link #INCLUDE_EXPORT_PATTERN}.

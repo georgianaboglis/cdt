@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2003, 2016 IBM Corporation and others.
+ *  Copyright (c) 2003, 2016, 2023 IBM Corporation and others.
  *
  *  This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License 2.0
@@ -13,6 +13,7 @@
  *     Baltasar Belyavsky (Texas Instruments) - [279633] Custom option command-generator support
  *     Miwako Tokugawa (Intel Corporation) - bug 222817 (OptionCategoryApplicability)
  *     Liviu Ionescu - [322168]
+ *     Serge Beauchamp (Freescale Semiconductor) - Bug 421276 - The CDT Managed Builder should support long command lines
  *******************************************************************************/
 package org.eclipse.cdt.managedbuilder.internal.core;
 
@@ -164,6 +165,7 @@ public class Tool extends HoldsOptions
 	private Boolean supportsManagedBuild;
 	private Boolean isHidden;
 	private boolean isTest;
+	private String argumentFileFormat = null;
 	//  Miscellaneous
 	private boolean isExtensionTool = false;
 	private boolean isDirty = false;
@@ -472,6 +474,7 @@ public class Tool extends HoldsOptions
 		if (tool.envVarBuildPathList != null)
 			envVarBuildPathList = new ArrayList<>(tool.envVarBuildPathList);
 
+		argumentFileFormat = tool.argumentFileFormat;
 		//		tool.updateScannerInfoSettingsToInputTypes();
 
 		//  Clone the children in superclass
@@ -624,6 +627,8 @@ public class Tool extends HoldsOptions
 		if (envVarBuildPathList == null && tool.envVarBuildPathList != null)
 			envVarBuildPathList = new ArrayList<>(tool.envVarBuildPathList);
 
+		if (argumentFileFormat == null)
+			argumentFileFormat = tool.argumentFileFormat;
 		//  Clone the children in superclass
 		super.copyNonoverriddenSettings(tool);
 		//  Clone the children
@@ -816,6 +821,8 @@ public class Tool extends HoldsOptions
 		tmp = element.getAttribute(IS_SYSTEM);
 		if (tmp != null)
 			isTest = Boolean.valueOf(tmp).booleanValue();
+
+		argumentFileFormat = SafeStringInterner.safeIntern(element.getAttribute(ARGUMENT_FILE_FORMAT));
 	}
 
 	/* (non-Javadoc)
@@ -974,6 +981,9 @@ public class Tool extends HoldsOptions
 
 		scannerConfigDiscoveryProfileId = SafeStringInterner
 				.safeIntern(element.getAttribute(IToolChain.SCANNER_CONFIG_PROFILE_ID));
+
+		if (element.getAttribute(ITool.ARGUMENT_FILE_FORMAT) != null)
+			argumentFileFormat = SafeStringInterner.safeIntern(element.getAttribute(ITool.ARGUMENT_FILE_FORMAT));
 	}
 
 	void resolveProjectReferences(boolean onLoad) {
@@ -1154,6 +1164,9 @@ public class Tool extends HoldsOptions
 
 			if (scannerConfigDiscoveryProfileId != null)
 				element.setAttribute(IToolChain.SCANNER_CONFIG_PROFILE_ID, scannerConfigDiscoveryProfileId);
+
+			if (argumentFileFormat != null)
+				element.setAttribute(ITool.ARGUMENT_FILE_FORMAT, argumentFileFormat);
 
 			saveRebuildState();
 
@@ -2099,6 +2112,18 @@ public class Tool extends HoldsOptions
 			}
 		}
 		return commandLinePattern;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.eclipse.cdt.managedbuilder.core.ITool#getArgumentFileFormat()
+	 */
+	@Override
+	public String getArgumentFileFormat() {
+		if (argumentFileFormat == null) {
+			if (getSuperClass() != null)
+				return getSuperClass().getArgumentFileFormat();
+		}
+		return argumentFileFormat;
 	}
 
 	/* (non-Javadoc)

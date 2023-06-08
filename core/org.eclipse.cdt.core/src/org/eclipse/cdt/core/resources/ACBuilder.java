@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 QNX Software Systems and others.
+ * Copyright (c) 2000, 2017, 2023 QNX Software Systems and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -13,6 +13,7 @@
  *     IBM Corporation
  *     James Blackburn (Broadcom Corp.)
  *     Jonah Graham (Kichwa Coders) - Bug 314428: New implementation for removing duplicate error markers
+ *     Serge Beauchamp (Freescale Semiconductor) - Bug 421276 - The CDT Managed Builder should support long command lines
  *******************************************************************************/
 package org.eclipse.cdt.core.resources;
 
@@ -382,4 +383,23 @@ public abstract class ACBuilder extends IncrementalProjectBuilder implements IMa
 		return null;
 	}
 
+	/**
+	 * Preference for using argument files while invoking command line tools.
+	 * @return true if the builders should use argument files while invoking command line tools.
+	 *         false otherwise
+	 * @see #setUseArgumentFiles(boolean)
+	 * @since 8.2
+	 */
+	public static boolean useArgumentFiles() {
+		return prefs.getBoolean(CCorePreferenceConstants.PREF_BUILD_USE_ARGUMENT_FILES, true);
+	}
+
+	/**
+	 * Preference for using argument files while invoking command line tools.
+	 * @see #useArgumentFiles()
+	 * @since 8.2
+	 */
+	public static void setUseArgumentFiles(boolean enable) {
+		prefs.putBoolean(CCorePreferenceConstants.PREF_BUILD_USE_ARGUMENT_FILES, enable);
+	}
 }

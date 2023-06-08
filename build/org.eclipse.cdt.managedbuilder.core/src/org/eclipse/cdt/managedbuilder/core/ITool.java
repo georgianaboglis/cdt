@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2003, 2010 IBM Corporation and others.
+ *  Copyright (c) 2003, 2010, 2023 IBM Corporation and others.
  *
  *  This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License 2.0
@@ -10,6 +10,7 @@
  *
  *  Contributors:
  *     IBM - Initial API and implementation
+ *     Serge Beauchamp (Freescale Semiconductor)
  *******************************************************************************/
 package org.eclipse.cdt.managedbuilder.core;
 
@@ -49,6 +50,10 @@ public interface ITool extends IHoldsOptions {
 	public static final String WHITE_SPACE = " "; //$NON-NLS-1$
 	public static final String EMPTY_STRING = ""; //$NON-NLS-1$
 	public static final String IS_SYSTEM = "isSystem"; //$NON-NLS-1$
+	/**
+	 * @since 9.6
+	 */
+	public static final String ARGUMENT_FILE_FORMAT = "argumentFileFormat"; //$NON-NLS-1$
 	/**
 	 * @since 8.4
 	 */
@@ -682,6 +687,20 @@ public interface ITool extends IHoldsOptions {
 	 * or null, if no conversion is required
 	 */
 	public IOptionPathConverter getOptionPathConverter();
+
+	/**
+	 * An argument file format specifies the syntax of how argument files
+	 * (or command files) can be passed to a command line tool to workaround
+	 * limitations in the command line length limit.
+	 *
+	 * The argument file format is a string including the "${file}" macro, which
+	 * will be replaced automatically by the path of the argument file, and passed
+	 * as argument to the command line tool.
+	 *
+	 * @return the argument file format, or null if argument files are not supported
+	 * @since 9.6
+	 */
+	public String getArgumentFileFormat();
 
 	CLanguageData getCLanguageData(IInputType type);
 

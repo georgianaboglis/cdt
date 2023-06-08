@@ -21,7 +21,10 @@
  *******************************************************************************/
 package org.eclipse.cdt.managedbuilder.makegen.gnu2;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,6 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.cdt.core.CCorePlugin;
+import org.eclipse.cdt.core.resources.ACBuilder;
 import org.eclipse.cdt.core.settings.model.CSourceEntry;
 import org.eclipse.cdt.core.settings.model.ICConfigurationDescription;
 import org.eclipse.cdt.core.settings.model.ICSettingEntry;
@@ -127,6 +131,8 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 
 	private Pattern doubleQuotedOption = Pattern.compile("--?[a-zA-Z]+.*?\\\".*?\\\".*"); //$NON-NLS-1$
 	private Pattern singleQuotedOption = Pattern.compile("--?[a-zA-Z]+.*?'.*?'.*"); //$NON-NLS-1$
+	private File argsFile;
+	private static final String FILE_MACRO = "${file}"; //$NON-NLS-1$
 
 	/**
 	 * This class walks the delta supplied by the build system to determine
@@ -699,6 +705,7 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 		buildOutVars.clear();
 		buildDepVars.clear();
 		topBuildOutVars.clear();
+		removeArgsFile();
 		populateSourcesMakefile(srcsFileHandle);
 		checkCancel();
 
@@ -951,6 +958,7 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 		buildOutVars.clear();
 		buildDepVars.clear();
 		topBuildOutVars.clear();
+		removeArgsFile();
 		populateSourcesMakefile(srcsFileHandle);
 		checkCancel();
 
@@ -1749,6 +1757,17 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 					commandLinePattern = commandLinePattern + " ${EXTRA_FLAGS}"; //$NON-NLS-1$
 				}
 			}
+
+			String argumentFileFormat = tool.getArgumentFileFormat();
+			if (ACBuilder.useArgumentFiles() && argumentFileFormat.contains(FILE_MACRO)) {
+				for (int i = 0; i < cmdInputs.length; i++) {
+					if (cmdInputs[i].equals(String.format("$(%s)", OBJS_MACRO))) { //$NON-NLS-1$
+						cmdInputs[i] = argumentFileFormat.replace(FILE_MACRO, argsFile.getAbsolutePath());
+						break;
+					}
+				}
+			}
+
 			IManagedCommandLineInfo cmdLInfo = gen.generateCommandLineInfo(tool, command, flags, outflag, outputPrefix,
 					primaryOutputs, cmdInputs, commandLinePattern);
 
@@ -2306,6 +2325,9 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 				//  Add the resource name to the makefile line that adds resources to the build variable
 				addMacroAdditionFile(buildVarToRuleStringMap, varName, relativePath, sourceLocation, generatedSource);
 			}
+		}
+		if (ACBuilder.useArgumentFiles()) {
+			buildArgFile();
 		}
 	}
 
@@ -4795,5 +4817,36 @@ public class GnuMakefileGenerator implements IManagedBuilderMakefileGenerator2 {
 		});
 
 		return sb.toString();
+	}
+
+	private void buildArgFile() {
+		Map<String, List<IPath>> buildOutputVars = this.getBuildOutputVars();
+
+		if (buildOutputVars.containsKey(OBJS_MACRO)) {
+			try {
+				if (argsFile == null) {
+					argsFile = new File(
+							this.getTopBuildDir().toFile().getAbsolutePath() + File.separator + "argument.args"); //$NON-NLS-1$
+					argsFile.createNewFile();
+					argsFile.deleteOnExit();
+				}
+				if (argsFile != null) {
+					BufferedWriter writer = new BufferedWriter(new FileWriter(argsFile.getAbsolutePath()));
+
+					for (IPath path : buildOutputVars.get(OBJS_MACRO)) {
+						writer.write(path.toString() + " "); //$NON-NLS-1$
+					}
+					writer.close();
+				}
+			} catch (IOException e) {
+			}
+		}
+	}
+
+	private void removeArgsFile() {
+		if (argsFile != null && argsFile.exists()) {
+			argsFile.delete();
+			argsFile = null;
+		}
 	}
 }
